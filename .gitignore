@@ -1,0 +1,15 @@
+# Audit output contains customer metadata — never commit it
+td_cdp_audit_*/
+audit_output/
+*.csv
+!tests/fixtures/*.csv
+
+# Secrets
+.env
+td.conf
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

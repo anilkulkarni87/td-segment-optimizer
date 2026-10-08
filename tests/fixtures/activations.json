@@ -1,0 +1,8 @@
+[
+ {"segmentId": "1001", "id": "s1", "name": "Export to ESP", "allColumns": false,
+  "columns": [
+   {"column": "email", "source": {"column": "email_address", "functions": []}},
+   {"column": "fname", "source": {"column": "first_name", "functions": []}},
+   {"column": "country", "source": {"column": "country", "functions": []}}
+  ]}
+]

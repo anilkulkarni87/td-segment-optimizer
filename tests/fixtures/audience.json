@@ -1,0 +1,28 @@
+{
+ "id": "100",
+ "name": "Acme Outdoor - Master Audience",
+ "description": "Synthetic fixture for tests",
+ "population": 25000,
+ "master": {"parentDatabaseName": "acme_gold", "parentTableName": "profiles"},
+ "attributes": [
+  {"id": "1", "name": "Country", "type": "string", "groupingName": "profile", "parentDatabaseName": "acme_gold", "parentTableName": "profile_attrs", "parentColumn": "country", "matrixColumnName": "country"},
+  {"id": "2", "name": "Email Opt In", "type": "string", "groupingName": "consent", "parentDatabaseName": "acme_gold", "parentTableName": "consent_attrs", "parentColumn": "email_opt_in", "matrixColumnName": "email_opt_in"},
+  {"id": "3", "name": "Loyalty Tier", "type": "string", "groupingName": "loyalty", "parentDatabaseName": "acme_gold", "parentTableName": "loyalty_attrs", "parentColumn": "tier", "matrixColumnName": "loyalty_tier"},
+  {"id": "4", "name": "Phone", "type": "string", "groupingName": "profile", "parentDatabaseName": "acme_gold", "parentTableName": "profile_attrs", "parentColumn": "phone", "matrixColumnName": "phone"},
+  {"id": "5", "name": "First Name", "type": "string", "groupingName": "profile", "parentDatabaseName": "acme_gold", "parentTableName": "profile_attrs", "parentColumn": "first_name", "matrixColumnName": "first_name"},
+  {"id": "6", "name": "Last Purchase Date", "type": "timestamp", "groupingName": "orders", "parentDatabaseName": "acme_gold", "parentTableName": "order_attrs", "parentColumn": "last_purchase_at", "matrixColumnName": "last_purchase_at"},
+  {"id": "7", "name": "Hiking Fan", "type": "string", "groupingName": "", "parentDatabaseName": "acme_gold", "parentTableName": "interest_attrs", "parentColumn": "hiking_fan", "matrixColumnName": "hiking_fan"}
+ ],
+ "behaviors": [
+  {"id": "b1", "name": "Order Events", "parentDatabaseName": "acme_gold", "parentTableName": "order_events", "matrixTableName": "behavior_order_events",
+   "schema": [
+    {"name": "Category", "type": "string", "parentColumn": "category", "matrixColumnName": "category"},
+    {"name": "Amount", "type": "number", "parentColumn": "amount", "matrixColumnName": "amount"},
+    {"name": "SKU", "type": "string", "parentColumn": "sku", "matrixColumnName": "sku"}
+   ]},
+  {"id": "b2", "name": "Web Visits", "parentDatabaseName": "acme_gold", "parentTableName": "pageviews", "matrixTableName": "behavior_pageviews",
+   "schema": [
+    {"name": "URL", "type": "string", "parentColumn": "url", "matrixColumnName": "url"}
+   ]}
+ ]
+}

@@ -1,0 +1,28 @@
+[
+ {"id": "1001", "name": "US opted-in buyers", "isVisible": true, "numSyndications": 1,
+  "createdAt": "2026-01-10T00:00:00Z", "updatedAt": "2026-09-01T00:00:00Z",
+  "rule": {"type": "And", "conditions": [
+   {"type": "And", "conditions": [
+    {"type": "Value", "leftValue": {"name": "country"}, "operator": {"type": "Equal", "rightValue": "US", "not": false}, "exclude": false},
+    {"type": "Value", "leftValue": {"name": "email_opt_in"}, "operator": {"type": "Equal", "rightValue": "true", "not": false}, "exclude": false}
+   ]},
+   {"type": "Value", "leftValue": {"source": {"name": "behavior_order_events"}, "aggregation": {"type": "Sum", "column": "amount"},
+     "filter": {"type": "And", "conditions": [{"type": "Column", "column": "category", "operator": {"type": "In", "rightValues": ["TENTS"]}}]}},
+    "operator": {"type": "GreaterEqual", "rightValue": 100}, "exclude": false}
+  ]}},
+ {"id": "1002", "name": "Gold tier (building block)", "isVisible": false, "numSyndications": 0,
+  "createdAt": "2024-02-01T00:00:00Z", "updatedAt": "2024-02-01T00:00:00Z",
+  "rule": {"type": "And", "conditions": [
+   {"type": "Value", "leftValue": {"name": "loyalty_tier"}, "operator": {"type": "Equal", "rightValue": "GOLD", "not": false}, "exclude": false}
+  ]}},
+ {"id": "1003", "name": "Combined", "isVisible": true, "numSyndications": 0,
+  "createdAt": "2026-08-01T00:00:00Z", "updatedAt": "2026-08-02T00:00:00Z",
+  "rule": {"type": "Or", "conditions": [
+   {"type": "Reference", "id": "1002", "exclude": false},
+   {"type": "Reference", "id": "9999", "exclude": false},
+   {"type": "Value", "leftValue": {"name": "known_profile"}, "operator": {"type": "Equal", "rightValue": "true", "not": false}, "exclude": false},
+   {"type": "Value", "leftValue": {"name": "legacy_region"}, "operator": {"type": "Equal", "rightValue": "WEST", "not": false}, "exclude": false}
+  ]}},
+ {"id": "1004", "name": "Empty draft", "isVisible": true, "numSyndications": 0,
+  "createdAt": "2026-09-30T00:00:00Z", "updatedAt": "2026-09-30T00:00:00Z", "rule": null}
+]
