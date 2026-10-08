@@ -584,10 +584,10 @@
       <div class="code-block" id="code-snippet-terminal">
         <button class="btn-copy" id="btn-copy-code" onclick="copyCode()">Copy</button>
 <span class="code-comment"># 1. Audit parent segment (incremental by default after first run)</span>
-<span class="code-cmd">python3</span> scripts/td_cdp_audit.py run <span class="code-flag">-p</span> 783953 <span class="code-flag">--include-activations</span> <span class="code-flag">--since-last-run</span>
+<span class="code-cmd">python3</span> scripts/td_cdp_audit.py run <span class="code-flag">-p</span> 123456 <span class="code-flag">--include-activations</span> <span class="code-flag">--since-last-run</span>
 
 <span class="code-comment"># 2. Re-analyze offline anytime with zero API calls</span>
-<span class="code-cmd">python3</span> scripts/td_cdp_audit.py analyze <span class="code-flag">-i</span> ./td_cdp_audit_783953 <span class="code-flag">--since</span> 2026-10-01
+<span class="code-cmd">python3</span> scripts/td_cdp_audit.py analyze <span class="code-flag">-i</span> ./td_cdp_audit_123456 <span class="code-flag">--since</span> 2026-10-01
       </div>
     </section>
 
@@ -707,7 +707,7 @@
     }
 
     function copyCode() {
-      const codeText = "python3 scripts/td_cdp_audit.py run -p 783953 --include-activations --since-last-run";
+      const codeText = "python3 scripts/td_cdp_audit.py run -p 123456 --include-activations --since-last-run";
       navigator.clipboard.writeText(codeText);
       const btn = document.getElementById("btn-copy-code");
       btn.innerText = "Copied!";

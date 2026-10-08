@@ -616,6 +616,8 @@ def write_outputs(res: dict, out: str) -> None:
     _dump(out, "summary.json", {k: v for k, v in res.items() if k != "rows"})
     with open(os.path.join(out, "report.md"), "w", encoding="utf-8") as f:
         f.write(render_markdown(res))
+    with open(os.path.join(out, "report.html"), "w", encoding="utf-8") as f:
+        f.write(render_html(res))
 
 
 def render_markdown(res: dict) -> str:
@@ -761,6 +763,333 @@ def _md(s: str) -> str:
     return str(s).replace("|", "\\|").strip()
 
 
+def render_html(res: dict) -> str:
+    """Generate a self-contained, interactive HTML audit report (zero dependencies)."""
+    s = res["summary"]
+    attr_counts = s.get("counts", {}).get("attribute", {})
+    attr_total = attr_counts.get("total", 1) or 1
+    nu_count = attr_counts.get("never_used", 0)
+    nu_pct = nu_count * 100 // attr_total
+    active_count = attr_counts.get("active", 0)
+    acts_count = attr_counts.get("activation_only", 0)
+    dormant_count = attr_counts.get("dormant", 0)
+    payload_json = json.dumps(res, ensure_ascii=False).replace("</script>", "<\\/script>")
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CDP Audit Report — Parent Segment {s['parent_segment_id']} ({s['parent_segment_name']})</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {{
+      --bg-base: #0a0d14;
+      --bg-surface: #111622;
+      --bg-card: rgba(22, 29, 44, 0.7);
+      --bg-card-hover: rgba(28, 38, 58, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(99, 102, 241, 0.3);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-indigo: #6366f1;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-cyan: #06b6d4;
+      --gradient-brand: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    }}
+    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      padding: 32px 24px;
+    }}
+    .container {{ max-width: 1200px; margin: 0 auto; }}
+    header {{
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border-subtle);
+    }}
+    h1 {{ font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }}
+    .subtitle {{ color: var(--text-muted); font-size: 14px; margin-top: 4px; }}
+    .badge {{
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600;
+      background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid var(--border-highlight);
+    }}
+    .stats-grid {{
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+    }}
+    .stat-card {{
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px;
+      padding: 20px; text-align: left;
+    }}
+    .stat-val {{ font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.2; }}
+    .stat-val.rose {{ color: var(--accent-rose); }}
+    .stat-val.emerald {{ color: var(--accent-emerald); }}
+    .stat-val.cyan {{ color: var(--accent-cyan); }}
+    .stat-val.indigo {{ color: #818cf8; }}
+    .stat-label {{ font-size: 13px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }}
+
+    .delta-banner {{
+      background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+    }}
+    .delta-title {{ font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: #6ee7b7; margin-bottom: 8px; }}
+    .delta-stats {{ display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: #cbd5e1; }}
+    .delta-stat strong {{ color: #fff; }}
+
+    .integrity-banner {{
+      background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.25);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+    }}
+    .integrity-title {{ font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: #fda4af; margin-bottom: 8px; }}
+
+    .controls {{
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+    }}
+    .search-input {{
+      flex: 1; min-width: 260px; background: var(--bg-surface); border: 1px solid var(--border-subtle);
+      border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none;
+    }}
+    .search-input:focus {{ border-color: var(--accent-indigo); }}
+    .btn {{
+      background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-muted);
+      padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }}
+    .btn.active, .btn:hover {{ background: #1c2438; color: var(--text-main); border-color: var(--border-highlight); }}
+    .btn.export {{ margin-left: auto; background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: var(--border-highlight); }}
+    .btn.export:hover {{ background: rgba(99, 102, 241, 0.3); }}
+
+    .table-container {{
+      background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 14px;
+      overflow-x: auto; margin-bottom: 40px;
+    }}
+    table {{ width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }}
+    th {{
+      background: #0d121c; padding: 12px 16px; color: var(--text-muted); font-weight: 600;
+      border-bottom: 1px solid var(--border-subtle); text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em;
+    }}
+    td {{ padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }}
+    tr:hover td {{ background: rgba(255, 255, 255, 0.02); }}
+    .col-name {{ font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #38bdf8; }}
+    .badge-status {{
+      display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+    }}
+    .badge-status.never_used {{ background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }}
+    .badge-status.active {{ background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }}
+    .badge-status.dormant {{ background: rgba(245, 158, 11, 0.15); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.3); }}
+    .badge-status.activation_only {{ background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); }}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Parent Segment {s['parent_segment_id']} <span style="font-weight:400; color:var(--text-muted);">({s['parent_segment_name']})</span></h1>
+        <div class="subtitle">Generated {dt.date.today().isoformat()} · {s['segments_total']} segments ({s['segments_with_rules']} with rules) · {s['activations_analyzed']} activations</div>
+      </div>
+      <div>
+        <span class="badge">v{__version__} · Interactive Audit</span>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val rose" id="kpi-unused">{nu_count}</div>
+        <div class="stat-label" id="kpi-unused-label">Never Used ({nu_pct}%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val emerald" id="kpi-active">{active_count}</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val cyan" id="kpi-acts">{acts_count}</div>
+        <div class="stat-label">Activation-Only</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val indigo" id="kpi-dormant">{dormant_count}</div>
+        <div class="stat-label">Dormant (> {s['recent_days']}d)</div>
+      </div>
+    </div>
+
+    <div id="integrity-container"></div>
+    <div id="delta-container"></div>
+
+    <div class="controls">
+      <input type="text" id="search-box" class="search-input" placeholder="Search columns, names, or groups..." oninput="applyFilters()">
+      <div id="kind-buttons">
+        <button class="btn active" onclick="setKind('attribute', this)">Attributes</button>
+        <button class="btn" onclick="setKind('behavior', this)">Behaviors</button>
+        <button class="btn" onclick="setKind('behavior_column', this)">Behavior Columns</button>
+        <button class="btn" onclick="setKind('all', this)">All</button>
+      </div>
+      <div id="status-buttons">
+        <button class="btn active" onclick="setStatus('all', this)">All Statuses</button>
+        <button class="btn" onclick="setStatus('never_used', this)">Never Used</button>
+        <button class="btn" onclick="setStatus('active', this)">Active</button>
+        <button class="btn" onclick="setStatus('activation_only', this)">Activation Only</button>
+        <button class="btn" onclick="setStatus('dormant', this)">Dormant</button>
+      </div>
+      <button class="btn export" onclick="exportFilteredCSV()">Export Filtered CSV</button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Column / Identifier</th>
+            <th>Display Name</th>
+            <th>Group / Parent</th>
+            <th>Type</th>
+            <th>Segments</th>
+            <th>Recent (< {s['recent_days']}d)</th>
+            <th>Activations</th>
+            <th>Last Used</th>
+          </tr>
+        </thead>
+        <tbody id="rows-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const data = {payload_json};
+    let currentKind = "attribute";
+    let currentStatus = "all";
+    let currentRows = [];
+
+    function updateKpis() {{
+      const counts = (data.summary.counts && data.summary.counts[currentKind]) ? data.summary.counts[currentKind] : (data.summary.counts ? data.summary.counts.attribute : {{}});
+      if (!counts) return;
+      const total = counts.total || 1;
+      const nu = counts.never_used || 0;
+      const nuPct = Math.round((nu / total) * 100);
+      document.getElementById("kpi-unused").innerText = nu;
+      document.getElementById("kpi-unused-label").innerText = `Never Used (${{nuPct}}%)`;
+      document.getElementById("kpi-active").innerText = counts.active || 0;
+      document.getElementById("kpi-acts").innerText = counts.activation_only || 0;
+      document.getElementById("kpi-dormant").innerText = counts.dormant || 0;
+    }}
+
+    function renderIntegrity() {{
+      const unmapped = data.unmapped_rule_fields || [];
+      const unknownBeh = data.unknown_behaviors || [];
+      const brokenRefs = data.broken_references || [];
+      if (!unmapped.length && !unknownBeh.length && !brokenRefs.length) return;
+
+      const el = document.getElementById("integrity-container");
+      let html = `
+        <div class="integrity-banner">
+          <div class="integrity-title">⚠️ Integrity Warnings Detected (${{unmapped.length + unknownBeh.length + brokenRefs.length}} issues)</div>
+          <div style="font-size:13px; color:#cbd5e1; display:flex; flex-direction:column; gap:6px; margin-top:8px;">`;
+      if (unmapped.length) {{
+        html += `<div>• <strong>${{unmapped.length}} unmapped rule fields</strong> (fields in segment rules not present in audience config)</div>`;
+      }}
+      if (unknownBeh.length) {{
+        html += `<div>• <strong>${{unknownBeh.length}} unknown behaviors</strong> referenced by child segments</div>`;
+      }}
+      if (brokenRefs.length) {{
+        html += `<div>• <strong>${{brokenRefs.length}} broken segment references</strong> (pointing to deleted segments)</div>`;
+      }}
+      html += `</div></div>`;
+      el.innerHTML = html;
+    }}
+
+    function renderDelta() {{
+      const d = data.delta;
+      if (!d) return;
+      const el = document.getElementById("delta-container");
+      el.innerHTML = `
+        <div class="delta-banner">
+          <div class="delta-title">⚡ Incremental Delta Activity (Since ${{d.since}})</div>
+          <div class="delta-stats">
+            <div class="delta-stat">New Segments: <strong>${{d.segments_created_count}}</strong></div>
+            <div class="delta-stat">Modified Segments: <strong>${{d.segments_modified_count}}</strong></div>
+            <div class="delta-stat">Attributes in Delta: <strong>${{d.attributes_used_in_delta_count}}</strong></div>
+            <div class="delta-stat">Newly Adopted Attributes: <strong>${{d.newly_adopted_attributes.length}}</strong></div>
+          </div>
+        </div>
+      `;
+    }}
+
+    function applyFilters() {{
+      const q = document.getElementById("search-box").value.toLowerCase();
+      const tbody = document.getElementById("rows-body");
+      tbody.innerHTML = "";
+
+      currentRows = data.rows.filter(r => {{
+        const matchKind = (currentKind === "all" || r.kind === currentKind);
+        const matchStatus = (currentStatus === "all" || r.status === currentStatus);
+        const matchSearch = (r.column || "").toLowerCase().includes(q) ||
+                            (r.name || "").toLowerCase().includes(q) ||
+                            (r.group || "").toLowerCase().includes(q) ||
+                            (r.source || "").toLowerCase().includes(q);
+        return matchKind && matchStatus && matchSearch;
+      }});
+
+      currentRows.forEach(r => {{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><span class="badge-status ${{r.status}}">${{r.status.replace('_', ' ')}}</span></td>
+          <td><span class="col-name">${{r.column}}</span></td>
+          <td>${{r.name || '—'}}</td>
+          <td><code>${{r.group || '—'}}</code></td>
+          <td>${{r.type || '—'}}</td>
+          <td><strong>${{r.segments}}</strong></td>
+          <td>${{r.segments_recent}}</td>
+          <td>${{r.activations}}</td>
+          <td>${{r.last_used || '—'}}</td>
+        `;
+        tbody.appendChild(tr);
+      }});
+    }}
+
+    function setKind(kind, btn) {{
+      currentKind = kind;
+      document.querySelectorAll("#kind-buttons .btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      updateKpis();
+      applyFilters();
+    }}
+
+    function setStatus(status, btn) {{
+      currentStatus = status;
+      document.querySelectorAll("#status-buttons .btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      applyFilters();
+    }}
+
+    function exportFilteredCSV() {{
+      if (!currentRows.length) return alert("No rows to export");
+      const headers = Object.keys(currentRows[0]);
+      const csv = [headers.join(",")].concat(
+        currentRows.map(r => headers.map(h => JSON.stringify(r[h] ?? "")).join(","))
+      ).join("\\n");
+      const blob = new Blob([csv], {{ type: "text/csv" }});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cdp_audit_filtered_${{data.summary.parent_segment_id}}.csv`;
+      a.click();
+    }}
+
+    renderIntegrity();
+    renderDelta();
+    applyFilters();
+  </script>
+</body>
+</html>
+"""
+
+
 def run_analyze(in_dir: str, out_dir: Optional[str], recent_days: int,
                 since: Optional[str] = None, since_last_run: bool = False) -> dict:
     audience = _load(in_dir, "audience.json")
@@ -787,7 +1116,7 @@ def run_analyze(in_dir: str, out_dir: Optional[str], recent_days: int,
         d = res["delta"]
         log(f"incremental delta (since {d['since']}): {d['segments_created_count']} created, "
             f"{d['segments_modified_count']} modified, {len(d['newly_adopted_attributes'])} newly adopted attributes")
-    log(f"wrote {os.path.join(out, 'report.md')}, attribute_usage.csv, summary.json")
+    log(f"wrote {os.path.join(out, 'report.md')}, report.html, attribute_usage.csv, summary.json")
     return res
 
 

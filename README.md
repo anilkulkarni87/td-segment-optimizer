@@ -13,14 +13,16 @@ Parent segments tend to accumulate attributes over time. Unused attributes slow 
 
 - ✅ **Fast Incremental Mode**: 10–25s refreshes after initial baseline
 - ✅ **Zero Dependencies**: Pure Python 3.8+ standard library
+- ✅ **Interactive Local Dashboard**: Every audit generates a self-contained `report.html` with instant filtering, search, and CSV export
 - ✅ **Multi-Region**: Works with any TD region (`us01`, `eu01`, `ap01`, `ap02`)
 - ✅ **Zero PII**: Read-only `GET` queries, never modifies accounts or logs credentials
-- ✅ **Interactive Web UI**: Includes a GitHub Pages dashboard & demo in `docs/`
+- ✅ **Interactive Docs & Demo**: Hosted on GitHub Pages with live interactive samples
 
 ## What it reports
 
 | Output | Content |
 |---|---|
+| `report.html` | **Interactive offline dashboard**: instant text search, status & kind filtering, dynamic KPI cards, integrity warnings, and filtered CSV export (zero runtime dependencies) |
 | `report.md` | Human-readable audit: summary, never-used attributes by group, ranked usage, behaviors, integrity findings |
 | `attribute_usage.csv` | One row per attribute / behavior / behavior column with `segments`, `segments_recent`, `activations`, `last_used`, `status` |
 | `summary.json` | Machine-readable totals + integrity findings |
@@ -34,7 +36,7 @@ Integrity findings:
 - segment rules referencing **unknown behaviors**
 - segments that include or exclude **deleted segments**
 
-See [`examples/sample_report.md`](examples/sample_report.md) (generated from synthetic data).
+See [`examples/sample_report.html`](examples/sample_report.html) and [`examples/sample_report.md`](examples/sample_report.md) (generated from synthetic data).
 
 ## Quick start
 

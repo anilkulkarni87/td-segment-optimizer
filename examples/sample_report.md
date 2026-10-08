@@ -1,6 +1,28 @@
 # CDP Attribute Usage Audit — Parent Segment 100 (Acme Outdoor - Master Audience)
 
-Generated 2026-10-07 by td-cdp-attribute-usage-audit v1.0.0. Analyzed **4 segments** (3 with rules) and **1 activations**.
+Generated 2026-10-08 by td-cdp-attribute-usage-audit v1.1.0. Analyzed **4 segments** (3 with rules) and **1 activations**.
+
+## Incremental Activity (Since 2026-01-01)
+
+| Metric | Count |
+|---|---|
+| New segments created | 3 |
+| Existing segments modified | 0 |
+| Attributes referenced in this window | 4 |
+| **Newly adopted attributes (first-time use)** | **4** |
+
+### Newly Adopted Attributes
+
+| Column | Display Name | Group | Segments Count |
+|---|---|---|---|
+| `country` | Country | `profile` | 1 |
+| `email_opt_in` | Email Opt In | `consent` | 1 |
+| `known_profile` | known_profile | `` | 1 |
+| `legacy_region` | legacy_region | `` | 1 |
+
+### Newly Adopted Behaviors
+
+- `behavior_order_events`
 
 Status legend: `never_used` (no segment rule or activation) · `activation_only` (exported but never filtered on) · `dormant` (used only by segments not updated in the last 180 days) · `active`.
 

@@ -46,9 +46,10 @@ does not scale past a few dozen segments.
    python3 scripts/td_cdp_audit.py analyze -i <OUTPUT_DIR> --since 2026-10-01
    ```
 5. **Validate**: stderr ends with `attributes never used: N/M ...` and `<OUTPUT_DIR>`
-   contains `report.md`, `attribute_usage.csv`, `summary.json`. Check
-   `summary.json → summary.segments_fetch_errors` is 0.
-6. **Present results** from `report.md`: totals, never-used attributes grouped by
+   contains `report.html`, `report.md`, `attribute_usage.csv`, `summary.json`. Check
+   `summary.json → summary.segments_fetch_errors` is 0. Open `report.html` in a browser
+   for interactive filtering and instant CSV exports.
+6. **Present results** from `report.md` or `report.html`: totals, never-used attributes grouped by
    `groupingName`, unused behaviors, and the *Integrity findings* section. Read
    [references/interpreting_results.md](references/interpreting_results.md) before
    recommending removals.

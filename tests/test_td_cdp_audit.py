@@ -117,11 +117,16 @@ class CliOfflineTest(unittest.TestCase):
             for f in os.listdir(FX):
                 shutil.copy(os.path.join(FX, f), d)
             t.main(["analyze", "-i", d, "--since", "2026-01-01"])
-            for f in ("report.md", "attribute_usage.csv", "summary.json"):
+            for f in ("report.md", "report.html", "attribute_usage.csv", "summary.json"):
                 self.assertTrue(os.path.exists(os.path.join(d, f)), f)
             with open(os.path.join(d, "report.md")) as f:
                 content = f.read()
                 self.assertIn("Incremental Activity", content)
+            with open(os.path.join(d, "report.html")) as f:
+                html_content = f.read()
+                self.assertIn("<!DOCTYPE html>", html_content)
+                self.assertIn("applyFilters", html_content)
+                self.assertIn("renderIntegrity", html_content)
         finally:
             shutil.rmtree(d)
 
