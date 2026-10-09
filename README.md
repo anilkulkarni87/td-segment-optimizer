@@ -101,33 +101,27 @@ by default; change with `--workers`).
 
 ## Strategic Applications: Beyond Attribute Cleanup
 
-While this tool was created to slim down parent segments and prune unused database columns, the raw extracts (`segments.json`, `activations.json`, `attribute_usage.csv`) represent a complete machine-readable snapshot of an organization's marketing operations. 
+While this tool was created to slim down parent segments and prune unused database columns, the raw extracts (`segments.json`, `activations.json`, `audience.json`, `summary.json`) represent a complete machine-readable snapshot of an organization's marketing operations.
 
-Teams and CDP architects can leverage these extracts to unlock several strategic opportunities:
+Teams, data architects, and AI workflows can leverage these JSON extracts to unlock continuous operational intelligence:
 
-### 1. Identifying the Behavioral "White Space" (Unexplored Use Cases)
-When an audit reveals that a behavior table or attribute group has 0% or low adoption (e.g. cart abandonment, product interest scores, churn propensities), this often signals an **untapped revenue opportunity** rather than just dead code:
-- **Abandoned Cart & Browse Recovery**: If cart or browse behavior tables exist but appear in fewer than 1% of segments, marketing is leaving high-intent eCommerce recovery revenue on the table.
-- **Cross-Pillar & Cross-Sell Journeys**: Large affinity groups (e.g. digital gamers, anime viewers, apparel buyers) that are never cross-targeted reveal opportunities to expand customer lifetime value across product lines.
-- **One-Time Buyer Conversion**: If purchase frequency and first/last order fields are never targeted together, automated second-purchase replenishment sequences can be designed.
+### 1. Quantify Data Product & Feature Adoption (`audience.json` + `segments.json`)
+Data engineering teams invest heavily in complex behavioral tables (e.g. recency/frequency metrics, product interaction logs) and predictive machine learning models (churn risk, propensity scores, LTV tiers). By cross-referencing `audience.json` against actual filter usage in `segments.json`, engineering leaders can measure which data products actively drive campaigns versus which represent untouched operational overhead.
 
-### 2. Campaign Taxonomy & Lifecycle Audit
-By analyzing segment naming patterns and rule structures across `segments.json`, marketing leaders can measure their campaign portfolio balance:
-- **Batch Blasts vs. Triggered Lifecycle**: Quantify the ratio of one-off promotional emails versus automated lifecycle journeys (welcome, re-engagement, win-back, churn prevention).
-- **Category & Geographic Concentration**: Detect whether marketing segmentation is overly concentrated in one product pillar or region, leaving other verticals under-segmented.
+### 2. Discover Segmentation Patterns & Auto-Generate Templates (`segments.json`)
+`segments.json` exports the complete Abstract Syntax Tree (AST) of all production segment filters. Internal tools and AI agents can analyze recurring filter combinations, recency windows, and operator patterns to synthesize high-converting segment templates and accelerate operator onboarding.
 
-### 3. Omnichannel Destination Gap Analysis
-Analyzing `activations.json` reveals the organization's outbound channel topology:
-- **Single-Channel Monopoly**: Many organizations inadvertently use their CDP as a glorified single-channel pipe (e.g. 100% of activations going only to an ESP like Salesforce Marketing Cloud or Braze).
-- **Paid Media & Paid Search Synergy**: Spot opportunities to syndicate CDP audiences to paid media connectors (Google Customer Match, Meta Custom Audiences, TikTok, DSPs) for lookalike modeling or to **suppress existing customers** from seeing expensive acquisition ads.
+### 3. Semantic Audience Deduplication & Governance (`segments.json`)
+Over years of marketing cycles, CDPs accumulate hundreds of overlapping audiences. Parsing the filter trees enables similarity scoring to identify near-duplicate audience definitions, merge redundant segment jobs, and prevent conflicting messaging to the same customer.
 
-### 4. Customer Care & Sentiment Suppressions
-Auditing whether support ticket behaviors (e.g. Zendesk, Salesforce Service Cloud) are utilized:
-- Suppressing marketing promotions to customers with open, unresolved support tickets or delivery escalations drastically reduces unsubscribes, brand frustration, and spam complaints.
+### 4. Audit Outbound Lineage & PII Egress (`activations.json`)
+`activations.json` indexes every syndication connector (ESPs, ad networks, cloud object storage, webhooks) along with payload field mappings. Compliance and security teams gain an automated audit log of which customer identifiers leave the CDP, validating consent compliance and enforcing data minimization principles.
 
-### 5. Data Pipeline & Cloud Cost Optimization
-- **Parent Segment Compaction**: Dropping dozens of unused joined attributes across hundreds of millions of customer profiles reduces daily matrix build times and query scan costs.
-- **Upstream Data Engineering Alignment**: Inform upstream data engineers which golden-layer tables and ETL pipelines can be deprecated or simplified.
+### 5. Upstream Data Warehouse Optimization (`attribute_usage.csv` + `summary.json`)
+Usage classifications (`never_used`, `dormant`, `activation_only`) provide factual evidence for data platform teams to safely drop unneeded golden-layer columns in Snowflake, Databricks, BigQuery, or Redshift—accelerating daily CDP matrix builds and slashing scan costs.
+
+### 6. Continuous CI/CD Guardrails & Breakage Detection (`summary.json`)
+Running automated audits in CI/CD or Digdag schedules surfaces broken segment references, missing behavior tables, and unmapped rule fields before scheduled syndications fail in production, protecting critical revenue-generating campaigns.
 
 ## Using it as an AI agent skill
 

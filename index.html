@@ -464,7 +464,7 @@
     /* Opportunities Cards */
     .opp-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
       margin-bottom: 64px;
     }
@@ -474,17 +474,39 @@
       border: 1px solid var(--border-subtle);
       border-radius: 14px;
       padding: 24px;
-      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .opp-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-highlight);
+    }
+
+    .opp-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
     }
 
     .opp-badge {
-      display: inline-block;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: #818cf8;
-      margin-bottom: 12px;
+    }
+
+    .opp-source {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
     }
 
     .opp-title {
@@ -627,23 +649,61 @@
     <!-- Strategic Opportunities Grid -->
     <section>
       <h2 class="section-title">Strategic Applications & Marketing Opportunities</h2>
-      <p class="section-subtitle">How organizations use the audit extracts to unlock revenue and efficiency beyond database cleanup.</p>
+      <p class="section-subtitle">How data engineering and marketing operations turn raw audit JSON extracts into continuous governance, architectural learning, and revenue impact.</p>
 
       <div class="opp-grid">
-        <div class="opp-card" id="opp-card-cart">
-          <span class="opp-badge">High Conversion</span>
-          <h3 class="opp-title">Abandoned Cart Recovery</h3>
-          <p class="opp-desc">Audit identifies when high-intent eCommerce cart tables exist in CDP but are used in fewer than 1% of campaigns. Unlocking automated 24h recovery drives immediate revenue.</p>
+        <div class="opp-card" id="opp-card-feature-roi">
+          <div class="opp-meta">
+            <span class="opp-badge">Feature ROI</span>
+            <span class="opp-source">audience.json</span>
+          </div>
+          <h3 class="opp-title">Quantify Data Product Adoption</h3>
+          <p class="opp-desc">Data teams invest heavily in complex behavioral tables and ML propensity models. Cross-referencing <code>audience.json</code> against active segment usage identifies which models power real campaigns versus which represent untouched engineering overhead.</p>
         </div>
-        <div class="opp-card" id="opp-card-cross-sell">
-          <span class="opp-badge">Customer LTV</span>
-          <h3 class="opp-title">Cross-Pillar Affinity Marketing</h3>
-          <p class="opp-desc">Detect large fan clusters (e.g. digital gamers, anime fans) that are never targeted with physical merchandise or events, uncovering massive cross-sell potential.</p>
+
+        <div class="opp-card" id="opp-card-rule-patterns">
+          <div class="opp-meta">
+            <span class="opp-badge">Automated Learning</span>
+            <span class="opp-source">segments.json</span>
+          </div>
+          <h3 class="opp-title">Discover Segmentation Patterns</h3>
+          <p class="opp-desc"><code>segments.json</code> exports the complete filter syntax (AST) of every production audience. Internal tools and AI agents can analyze recurring filter combinations, recency windows, and operator patterns to synthesize high-converting segment templates.</p>
         </div>
-        <div class="opp-card" id="opp-card-omnichannel">
-          <span class="opp-badge">Ad Spend Efficiency</span>
-          <h3 class="opp-title">Paid Media Suppression</h3>
-          <p class="opp-desc">Syndicate active customer lists to Google Customer Match and Meta Ads to suppress existing subscribers from seeing expensive acquisition campaigns.</p>
+
+        <div class="opp-card" id="opp-card-dedup">
+          <div class="opp-meta">
+            <span class="opp-badge">Audience Governance</span>
+            <span class="opp-source">segments.json</span>
+          </div>
+          <h3 class="opp-title">Consolidate Redundant Segments</h3>
+          <p class="opp-desc">Over years of campaign cycles, CDPs accumulate hundreds of overlapping audiences. Parsing the filter trees enables similarity clustering to detect duplicate logic created by disparate teams, merging redundant audiences and preventing message collisions.</p>
+        </div>
+
+        <div class="opp-card" id="opp-card-lineage">
+          <div class="opp-meta">
+            <span class="opp-badge">Privacy & Egress</span>
+            <span class="opp-source">activations.json</span>
+          </div>
+          <h3 class="opp-title">Audit Outbound PII Lineage</h3>
+          <p class="opp-desc"><code>activations.json</code> indexes every syndication connector (ESPs, ad networks, cloud storage, webhooks) along with payload field mappings. Compliance teams can track exactly which identifiers leave the CDP, validating consent compliance and preventing unauthorized exports.</p>
+        </div>
+
+        <div class="opp-card" id="opp-card-warehouse-cost">
+          <div class="opp-meta">
+            <span class="opp-badge">Cloud Cost Optimization</span>
+            <span class="opp-source">summary.json</span>
+          </div>
+          <h3 class="opp-title">Deprecate Upstream Warehouse Columns</h3>
+          <p class="opp-desc">Usage classifications (<code>never_used</code>, <code>dormant</code>, <code>activation_only</code>) provide factual evidence for data platform teams to safely drop unneeded golden-layer columns in Snowflake, Databricks, or BigQuery—accelerating daily builds and slashing scan costs.</p>
+        </div>
+
+        <div class="opp-card" id="opp-card-cicd">
+          <div class="opp-meta">
+            <span class="opp-badge">CI/CD Guardrails</span>
+            <span class="opp-source">summary.json</span>
+          </div>
+          <h3 class="opp-title">Prevent Production Breakage</h3>
+          <p class="opp-desc">Running automated audits in CI/CD or Digdag schedules surfaces broken segment references, missing behavior tables, and unmapped rule fields before scheduled syndications fail in production, protecting critical revenue-generating campaigns.</p>
         </div>
       </div>
     </section>
