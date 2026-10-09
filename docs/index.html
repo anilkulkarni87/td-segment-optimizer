@@ -267,9 +267,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .terminal-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
     }
 
     .terminal-dots {
@@ -292,41 +301,71 @@
       color: var(--text-muted);
     }
 
-    .code-block {
-      background: #090c12;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-      padding: 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: #e2e8f0;
-      overflow-x: auto;
-      line-height: 1.7;
-      position: relative;
+    .terminal-tabs {
+      display: flex;
+      gap: 6px;
+      align-items: center;
     }
 
-    .code-comment { color: #64748b; }
-    .code-cmd { color: #38bdf8; }
-    .code-flag { color: #f472b6; }
-
-    .btn-copy {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
-      font-size: 11px;
+    .term-tab {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
       font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
       padding: 4px 10px;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .btn-copy:hover {
-      background: rgba(255, 255, 255, 0.2);
+    .term-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
     }
+
+    .term-tab.active {
+      color: #818cf8;
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .code-block {
+      background: #090c12;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      color: #e2e8f0;
+      overflow-x: auto;
+      line-height: 1.8;
+      white-space: pre;
+      margin: 0;
+    }
+
+    .code-comment { color: #64748b; }
+    .code-cmd { color: #38bdf8; font-weight: 600; }
+    .code-flag { color: #f472b6; }
 
     /* Interactive Explorer Section */
     .section-title {
@@ -596,21 +635,23 @@
     <!-- Quickstart Terminal -->
     <section class="quickstart-section">
       <div class="terminal-header">
-        <div class="terminal-dots">
-          <span class="dot dot-red"></span>
-          <span class="dot dot-yellow"></span>
-          <span class="dot dot-green"></span>
+        <div class="terminal-left">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">bash — quickstart</span>
+          <div class="terminal-tabs">
+            <button class="term-tab active" id="tab-term-all" onclick="switchSnippet('all', this)">Full Workflow</button>
+            <button class="term-tab" id="tab-term-baseline" onclick="switchSnippet('baseline', this)">1. Baseline Audit</button>
+            <button class="term-tab" id="tab-term-incremental" onclick="switchSnippet('incremental', this)">2. Incremental (~15s)</button>
+            <button class="term-tab" id="tab-term-offline" onclick="switchSnippet('offline', this)">3. Offline Analysis</button>
+          </div>
         </div>
-        <span class="terminal-title">bash — quickstart</span>
-      </div>
-      <div class="code-block" id="code-snippet-terminal">
         <button class="btn-copy" id="btn-copy-code" onclick="copyCode()">Copy</button>
-<span class="code-comment"># 1. Audit parent segment (incremental by default after first run)</span>
-<span class="code-cmd">python3</span> scripts/td_cdp_audit.py run <span class="code-flag">-p</span> 123456 <span class="code-flag">--include-activations</span> <span class="code-flag">--since-last-run</span>
-
-<span class="code-comment"># 2. Re-analyze offline anytime with zero API calls</span>
-<span class="code-cmd">python3</span> scripts/td_cdp_audit.py analyze <span class="code-flag">-i</span> ./td_cdp_audit_123456 <span class="code-flag">--since</span> 2026-10-01
       </div>
+      <pre class="code-block" id="code-snippet-terminal"><code></code></pre>
     </section>
 
     <!-- Interactive Live Audit Sample -->
@@ -766,15 +807,68 @@
       renderTable();
     }
 
+    const snippets = {
+      all: `# 1. Set credentials (or rely on ~/.td/td.conf)
+export TD_API_KEY="xxxx/xxxxxxxxxxxxxxxxxxxx"
+
+# 2. Run initial full baseline audit
+python3 scripts/td_cdp_audit.py run -p 123456 --region eu01 --include-activations
+
+# 3. Subsequent fast incremental refreshes (~15s)
+python3 scripts/td_cdp_audit.py run -p 123456 --include-activations --since-last-run
+
+# 4. Re-analyze offline anytime with zero API calls
+python3 scripts/td_cdp_audit.py analyze -i ./td_cdp_audit_123456 --since 2026-10-01`,
+
+      baseline: `# Initial full baseline audit (downloads parent schema, all segments & activations)
+python3 scripts/td_cdp_audit.py run -p 123456 --region eu01 --include-activations -o ./td_cdp_audit_123456`,
+
+      incremental: `# Subsequent fast incremental audit (~15s: only downloads updates since last run)
+python3 scripts/td_cdp_audit.py run -p 123456 --include-activations -o ./td_cdp_audit_123456 --since-last-run`,
+
+      offline: `# Re-analyze offline anytime with zero API calls (offline compute & filtering)
+python3 scripts/td_cdp_audit.py analyze -i ./td_cdp_audit_123456 --since 2026-10-01`
+    };
+
+    let currentSnippetKey = "all";
+
+    function highlightBash(text) {
+      return text.split("\n").map(line => {
+        if (line.trim().startsWith("#")) {
+          return `<span class="code-comment">${line}</span>`;
+        }
+        return line.replace(/(export|python3)\b|(\s)(-[a-zA-Z]|--[a-zA-Z0-9_-]+)/g, (match, kw, space, flag) => {
+          if (kw) return `<span class="code-cmd">${kw}</span>`;
+          if (flag) return `${space}<span class="code-flag">${flag}</span>`;
+          return match;
+        });
+      }).join("\n");
+    }
+
+    function renderSnippet() {
+      const codeEl = document.querySelector("#code-snippet-terminal code");
+      if (codeEl) {
+        codeEl.innerHTML = highlightBash(snippets[currentSnippetKey]);
+      }
+    }
+
+    function switchSnippet(key, btn) {
+      currentSnippetKey = key;
+      document.querySelectorAll(".term-tab").forEach(t => t.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      renderSnippet();
+    }
+
     function copyCode() {
-      const codeText = "python3 scripts/td_cdp_audit.py run -p 123456 --include-activations --since-last-run";
-      navigator.clipboard.writeText(codeText);
+      const textToCopy = snippets[currentSnippetKey];
+      navigator.clipboard.writeText(textToCopy);
       const btn = document.getElementById("btn-copy-code");
-      btn.innerText = "Copied!";
+      btn.innerText = "✓ Copied!";
       setTimeout(() => btn.innerText = "Copy", 2000);
     }
 
     // Initialize
+    renderSnippet();
     renderTable();
   </script>
 </body>
